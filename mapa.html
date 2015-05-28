@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<style>
+#map_canvas {
+    width: 700px;
+    height: 600px;
+
+}
+
+.infoWindow {
+border-radius: 20px;
+}
+
+.infowin h3 {
+    font-family: helvetica;
+    margin: 1px 1 2px 1;
+    padding: 0px 0;
+    background-color: #009966;
+    color: #FFF;
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+}
+.infowin .body {
+color: black;
+font: Helvetica, Arial, Verdana, sans-serif;
+max-width: none;
+padding:0px;
+margin:0px;
+}
+.infowin .body p {
+    margin: 0;
+    padding: 1px 0;
+    border: 0 solid #999;
+    border-bottom-width: 0px;
+    font-size: 12px;
+}
+.infowin .body p.odd {
+}
+.infowin .body p.even {
+    background-color: #66CC99;
+}
+.infowin div span {
+    font-weight: bold;
+}
+</style>
+
+<script src="http://maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>
+<script type='text/javascript'>
+/*$.ajax({
+  dataType: "json",
+  url: 'http://tusitio.comdatos.php?longitud=-99.13330667&latitud=19.42342714&radio=2000&fecha=2014-03-18',
+  data: data,
+  success: success
+});
+console.log($.ajax);
+*/
+var script = document.createElement('script');
+// assing src with callback name
+script.src = 'http://www.tusitio.comdatos.php?callback=jsonp';
+// insert script to document and load content
+mapInitData = {
+    lat: 19.430718807900153,
+    lng: -99.15966641751862,
+    zoom: 14
+};
+var data;
+function jsonp(content) {
+       console.log(content);
+    //document.getElementById('output').innerHTML = content;
+ data=content;
+ var geocoder = new google.maps.Geocoder();
+    var latlng = new google.maps.LatLng(mapInitData.lat, mapInitData.lng);
+    var myOptions = {
+        zoom: mapInitData.zoom,
+        center: latlng,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    }
+    var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+    var infoWindow = new google.maps.InfoWindow();
+    function infoClosure(map, marker, val) {
+        return function() {
+            content = [];
+            content.push('<div class="infowin">');
+            content.push('<h3>Lugar</h3>');
+            content.push('<div class="body">');
+            content.push('<p></p>');
+            content.push('<p class="odd"><span>Nombre:</span>' + val.nombre + '</p>');
+            content.push('<p class="even"><span>Calle principal:</span>' + val.categoria + '</p>');
+            content.push('<p class="odd"><span>Calle secundaria:</span>' + val.subcategoria + '</p>');
+            content.push('<p class="even"><span>Colonia:</span>' + val.colonia + '</p>');
+            content.push('<p class="odd"><span>Seguridad:</span>' + val.contacto + '</p>');
+            content.push('<p class="even"><span>Estacionamiento:</span>' + val.horario + '</p>');
+            content.push('</div></div>');
+            infoWindow.setContent(content.join(''));
+            infoWindow.open(map, marker);
+        }
+    }
+    function codeAddress() {
+/*
+        var address = document.getElementById("address").value;
+        geocoder.geocode( { 'address': address}, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                var north = results[0].geometry.location.lat() + 1;
+                var south = results[0].geometry.location.lat() - 1;
+                var east = results[0].geometry.location.lng() + 1;
+                var west = results[0].geometry.location.lng() - 1;
+                var quakeloc = 'http://api.geonames.org/earthquakesJSON?north=' + north + '&south=' + south + '&east=' + east + '&west=' + west + '&username=********';
+                map.setCenter(results[0].geometry.location);
+                $.getJSON(quakeloc, function(data){
+*/
+                    $.each(data.bicis, function(key, val){
+                        var aux='http://www.tusitio/images/pin.png';
+                        if (val.categoria=="Oficiales") {
+                            aux="http://clientes.sclbits.com/ecobici/facebook/estaciones/images/download.gif";
+                        }
+                        var location = new google.maps.LatLng(val.latitud, val.longitud);
+                        var marker = new google.maps.Marker({
+                            map: map,
+                             icon: {
+                                  url: aux},
+                            position: location,
+                            title: 'Magnitude: ' + val.calle + ' Depth: ' + val.latitud + ' Date: ' + val.longitud
+                        });
+                        google.maps.event.addListener( marker, 'click', infoClosure(map, marker, val) );
+                    });
+/*
+                });
+            }
+            else {
+                alert("Geocode was not successful for the following reason: " + status);
+            }
+        });
+*/
+    }
+ codeAddress();
+}
+
+onload = function(){
+    document.body.appendChild(script);};
+
+</script>
+</head>
+<body>
+<div id="map_canvas"></div>
+</body>
+</html>
